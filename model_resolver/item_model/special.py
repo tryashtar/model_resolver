@@ -877,20 +877,22 @@ class SpecialModelShulkerBox(SpecialModelBase):
 class SpecialModelShield(SpecialModelBase):
     type: Literal["minecraft:shield", "shield"]
     COLOR_STRING_TO_ARGB: dict[str, int] = {
-        "white": 16383998,
-        "light_gray": 10329495,
-        "gray": 4673362,
-        "black": 1908001,
-        "brown": 8606770,
-        "red": 11546150,
+        "white": 0xF9FFFE,
         "orange": 16351261,
-        "green": 6192150,
-        "cyan": 1481884,
-        "light_blue": 3847130,
-        "blue": 3949738,
-        "purple": 8991416,
         "magenta": 13061821,
+        "light_blue": 3847130,
+        "yellow": 16701501,
+        "lime": 8439583,
         "pink": 15961002,
+        "gray": 4673362,
+        "light_gray": 0x9D9D97,
+        "cyan": 1481884,
+        "purple": 8991416,
+        "blue": 3949738,
+        "brown": 8606770,
+        "green": 6192150,
+        "red": 11546150,
+        "black": 0x1D1D21,
     }
     STEP: float = 0.0005
 
