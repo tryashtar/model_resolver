@@ -147,6 +147,83 @@ class SpecialModelBed(SpecialModelBase):
 class SpecialModelBanner(SpecialModelBase):
     type: Literal["minecraft:banner", "banner"]
     color: str
+    COLOR_STRING_TO_ARGB: dict[str, int] = {
+        "white": 0xF9FFFE,
+        "orange": 16351261,
+        "magenta": 13061821,
+        "light_blue": 3847130,
+        "yellow": 16701501,
+        "lime": 8439583,
+        "pink": 15961002,
+        "gray": 4673362,
+        "light_gray": 0x9D9D97,
+        "cyan": 1481884,
+        "purple": 8991416,
+        "blue": 3949738,
+        "brown": 8606770,
+        "green": 6192150,
+        "red": 11546150,
+        "black": 0x1D1D21,
+    }
+    
+    def get_tints(self, getter: PackGetterV2, item: Item) -> list[TintSource]:
+        res: list[TintSource] = []
+        color = self.color
+        color = self.COLOR_STRING_TO_ARGB[color]
+        color = to_argb(color)
+        color = (color[1], color[2], color[3])
+        res.append(TintSourceConstant(type="constant", value=color))
+        return res
+    
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        model: dict[str, Any] = {
+            "textures": {
+                "0": "minecraft:entity/banner_base"
+            },
+            "elements": [
+                {
+                    "from": [7.33334, 0, 7.33333],
+                    "to": [8.66667, 28, 8.66666],
+                    "rotation": {"angle": -90, "axis": "y", "origin": [8, 0, 8]},
+                    "faces": {
+                        "north": {"uv": [12, 0.5, 12.5, 11], "texture": "#0"},
+                        "east": {"uv": [11.5, 0.5, 12, 11], "texture": "#0"},
+                        "south": {"uv": [11, 0.5, 11.5, 11], "texture": "#0"},
+                        "west": {"uv": [12.5, 0.5, 13, 11], "texture": "#0"},
+                        "up": {"uv": [11.5, 0, 12, 0.5], "rotation": 90, "texture": "#0"},
+                        "down": {"uv": [12.5, 0, 12, 0.5], "rotation": 270, "texture": "#0"}
+                    }
+                },
+                {
+                    "from": [7.33333, 28, 1.33333],
+                    "to": [8.66667, 29.33333, 14.66667],
+                    "rotation": {"angle": -90, "axis": "y", "origin": [8, 0, 8]},
+                    "faces": {
+                        "north": {"uv": [5.5, 11, 6, 11.5], "texture": "#0"},
+                        "east": {"uv": [6, 11, 11, 11.5], "texture": "#0"},
+                        "south": {"uv": [0, 11, 0.5, 11.5], "texture": "#0"},
+                        "west": {"uv": [6, 11, 11, 11.5], "texture": "#0"},
+                        "up": {"uv": [5.5, 11, 0.5, 10.5], "rotation": 90, "texture": "#0"},
+                        "down": {"uv": [5.5, 11, 10.5, 10.5], "rotation": 270, "texture": "#0"}
+                    }
+                },
+                {
+                    "from": [8.66667, 2.66667, 1.33333],
+                    "to": [9.66667, 29.33333, 14.66667],
+                    "rotation": {"angle": -90, "axis": "y", "origin": [8, 0, 8]},
+                    "faces": {
+                        "north": {"uv": [5.25, 0.25, 5.5, 10.25], "texture": "#0", "tintindex": 0},
+                        "east": {"uv": [0.25, 0.25, 5.25, 10.25], "texture": "#0", "tintindex": 0},
+                        "south": {"uv": [0, 0.25, 0.25, 10.25], "texture": "#0", "tintindex": 0},
+                        "west": {"uv": [5.5, 0.25, 10.5, 10.25], "texture": "#0", "tintindex": 0},
+                        "up": {"uv": [5.25, 0, 0.25, 0.25], "rotation": 90, "texture": "#0", "tintindex": 0},
+                        "down": {"uv": [10.25, 0, 5.25, 0.25], "rotation": 270, "texture": "#0", "tintindex": 0}
+                    }
+                }
+            ]
+        }
+        return model
+
 
 
 class SpecialModelConduit(SpecialModelBase):
