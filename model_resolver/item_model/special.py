@@ -208,10 +208,6 @@ class SpecialModelChest(SpecialModelBase):
         }
         return model
 
-    def get_scale(self) -> float:
-        return 0.75
-
-
 class PropertiesModel(BaseModel):
     name: str
     value: str
