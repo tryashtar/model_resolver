@@ -1088,6 +1088,56 @@ class SpecialModelTrident(SpecialModelBase):
 class SpecialModelDecoratedPot(SpecialModelBase):
     type: Literal["minecraft:decorated_pot", "decorated_pot"]
 
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        model: dict[str, Any] = {
+        	"textures": {
+        		"base": "minecraft:entity/decorated_pot/decorated_pot_base",
+        		"side": "minecraft:entity/decorated_pot/decorated_pot_side",
+        		"particle": "#base"
+        	},
+        	"elements": [
+        		{
+        			"from": [4.1, 17.1, 4.1],
+        			"to": [11.9, 19.9, 11.9],
+        			"rotation": {"angle": 0, "axis": "y", "origin": [1, 17, 1]},
+        			"faces": {
+        				"north": {"uv": [12, 4, 16, 5.5], "texture": "#base"},
+        				"east": {"uv": [8, 4, 12, 5.5], "texture": "#base"},
+        				"south": {"uv": [4, 4, 8, 5.5], "texture": "#base"},
+        				"west": {"uv": [0, 4, 3.5, 5.5], "texture": "#base"},
+        				"up": {"uv": [4, 0, 8, 4], "texture": "#base"},
+        				"down": {"uv": [8, 4, 12, 0], "texture": "#base"}
+        			}
+        		},
+        		{
+        			"from": [4.8, 15.8, 4.8],
+        			"to": [11.2, 17.2, 11.2],
+        			"rotation": {"angle": 0, "axis": "y", "origin": [1, 16, 1]},
+        			"faces": {
+        				"north": {"uv": [9, 5.5, 12, 6], "texture": "#base"},
+        				"east": {"uv": [6, 5.5, 9, 6], "texture": "#base"},
+        				"south": {"uv": [3, 5.5, 6, 6], "texture": "#base"},
+        				"west": {"uv": [0, 5.5, 3, 6], "texture": "#base"},
+        				"up": {"uv": [3, 2.5, 6, 5.5], "texture": "#base"},
+        				"down": {"uv": [6, 5.5, 9, 2.5], "texture": "#base"}
+        			}
+        		},
+        		{
+        			"from": [1, 0, 1],
+        			"to": [15, 16, 15],
+        			"rotation": {"angle": 0, "axis": "y", "origin": [1, 0, 1]},
+        			"faces": {
+        				"north": {"uv": [1, 0, 15, 16], "texture": "#side"},
+        				"east": {"uv": [1, 0, 15, 16], "texture": "#side"},
+        				"south": {"uv": [1, 0, 15, 16], "texture": "#side"},
+        				"west": {"uv": [1, 0, 15, 16], "texture": "#side"},
+        				"up": {"uv": [7, 13.5, 14, 6.5], "texture": "#base"},
+        				"down": {"uv": [0, 6.5, 7, 13.5], "texture": "#base"}
+        			}
+        		}
+        	]
+        }
+        return model
 
 wood_types = Literal[
     "oak",
