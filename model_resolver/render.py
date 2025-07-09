@@ -34,20 +34,16 @@ class AtlasDict(TypedDict):
     permutations: dict[str, str]
 
 
-@dataclass
 class Render:
-    ctx: Context
-
-    tasks: list[Task] = field(default_factory=list)
-    tasks_index: int = 0
-    light: LightOptions = field(default_factory=LightOptions)
-    dynamic_textures: dict[str, Image.Image] = field(default_factory=dict)
-    default_render_size: int = DEFAULT_RENDER_SIZE
-    random_seed: int = 143221
-
     def __init__(self, ctx: Context, release: Release):
-        self.ctx = ctx
+        self.ctx: Context = ctx
         self.getter = PackGetterV2.from_context(ctx, release)
+        self.tasks: list[Task] = []
+        self.tasks_index: int = 0
+        self.light: LightOptions = LightOptions()
+        self.dynamic_textures: dict[sr, Image.Image] = {}
+        self.default_render_size: int = DEFAULT_RENDER_SIZE
+        self.random_seed: int = 143221
 
     def __repr__(self):
         return f"<Render of {len(self.tasks)} tasks>"
