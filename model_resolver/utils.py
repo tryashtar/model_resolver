@@ -12,7 +12,7 @@ from functools import lru_cache
 from pydantic import BaseModel
 import logging
 
-from beet.contrib.vanilla import Vanilla
+from beet.contrib.vanilla import Vanilla, Release
 
 log = logging.getLogger(__name__)
 
@@ -60,24 +60,14 @@ class PackGetterV2[T: Pack]:
     data: DataPack
     opts: ModelResolverOptions
     _ctx: Context
-    _vanilla: Vanilla
+    _vanilla: Release
 
     @classmethod
-    def from_context(cls, ctx: Context) -> Self:
-        opts = ctx.validate("model_resolver", ModelResolverOptions)
-        vanilla = Vanilla(
-            ctx,
-            minecraft_version=(
-                opts.minecraft_version
-                if opts.minecraft_version != "latest"
-                else LATEST_MINECRAFT_VERSION
-            ),
-        )
-        
-            
+    def from_context(cls, ctx: Context, release: Release) -> Self:
+        opts = ctx.validate("model_resolver", ModelResolverOptions)            
 
         assets = ResourcePack()
-        assets.merge(vanilla.assets)
+        assets.merge(release.assets)
         if opts.special_rendering:
             static_models = pathlib.Path(__file__).parent / "static_models"
             rp = ResourcePack(str(static_models))
@@ -87,16 +77,14 @@ class PackGetterV2[T: Pack]:
         
 
         data = DataPack()
-        data.merge(vanilla.data)
+        data.merge(release.data)
         data.merge(ctx.data)
 
-        return cls(assets=assets, data=data, _ctx=ctx, _vanilla=vanilla, opts=opts)
+        return cls(assets=assets, data=data, _ctx=ctx, _vanilla=release, opts=opts)
 
 
 @lru_cache
-def get_default_components(ctx: Context) -> dict[str, Any]:
-    getter = PackGetterV2.from_context(ctx)
-    version = getter._vanilla.minecraft_version
+def get_default_components(ctx: Context, release: Release) -> dict[str, Any]:
     opts = ctx.validate("model_resolver", ModelResolverOptions)
     prefered = opts.preferred_minecraft_generated
     # TODO: if java is not found, fallback to misode/mcmeta
@@ -114,13 +102,12 @@ def get_default_components(ctx: Context) -> dict[str, Any]:
             prefered = "misode/mcmeta"
     match prefered:
         case "misode/mcmeta":
-            url = f"https://raw.githubusercontent.com/misode/mcmeta/refs/tags/{version}-summary/item_components/data.json"
+            url = f"https://raw.githubusercontent.com/misode/mcmeta/refs/tags/{release.info.data["id"]}-summary/item_components/data.json"
             path = ctx.cache["model_resolver"].download(url)
             with open(path) as file:
                 components = json.load(file)
             return {resolve_key(key): value for key, value in components.items()}
         case "java":
-            release = getter._vanilla.releases[version]
             jar = release.cache.download(
                 release.info.data["downloads"]["server"]["url"]
             )

@@ -5,6 +5,7 @@ from model_resolver.minecraft_model import DisplayOptionModel
 from model_resolver.my_glut_init import glutInit
 
 from beet import Context, Atlas
+from beet.contrib.vanilla import Release
 from dataclasses import dataclass, field
 from model_resolver.item_model.item import Item
 from model_resolver.tasks.item import ItemRenderTask
@@ -44,8 +45,9 @@ class Render:
     default_render_size: int = DEFAULT_RENDER_SIZE
     random_seed: int = 143221
 
-    def __post_init__(self):
-        self.getter = PackGetterV2.from_context(self.ctx)
+    def __init__(self, ctx: Context, release: Release):
+        self.ctx = ctx
+        self.getter = PackGetterV2.from_context(ctx, release)
 
     def __repr__(self):
         return f"<Render of {len(self.tasks)} tasks>"
