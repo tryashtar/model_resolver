@@ -69,7 +69,7 @@ class Render:
         self.tasks.append(
             ItemRenderTask(
                 getter=self.getter,
-                item=item.fill(self.ctx),
+                item=item.fill(self.ctx, self.getter._vanilla),
                 path_ctx=path_ctx,
                 path_save=path_save,
                 render_size=render_size,

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Any, Self
 from beet import Context
+from beet.contrib.vanilla import Release
 from model_resolver.utils import get_default_components, resolve_key
 
 
@@ -14,10 +15,10 @@ class Item(BaseModel):
 
     __resolved__: bool = False
 
-    def fill(self, ctx: Context) -> Self:
+    def fill(self, ctx: Context, release: Release) -> Self:
         if self.__resolved__:
             return self
-        components = get_default_components(ctx)
+        components = get_default_components(ctx, release)
         real_id = resolve_key(self.id)
         if real_id in components:
             self.default_components = components[real_id]
