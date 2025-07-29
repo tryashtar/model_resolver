@@ -5,8 +5,9 @@ from model_resolver.item_model.tint_source import (
     to_argb,
     TintSourceConstant,
 )
-from typing import Optional, Literal, Union, Any
+from typing import ClassVar, Optional, Literal, Union, Any
 from model_resolver.item_model.item import Item
+from model_resolver.minecraft_model import MultiTexture, TextureSource
 from model_resolver.utils import PackGetterV2, clamp, resolve_key
 from PIL import Image
 from uuid import UUID
@@ -143,8 +144,210 @@ class SpecialModelBed(SpecialModelBase):
         }
         return model
 
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        namespace, path = resolve_key(self.texture).split(":")
+        model: dict[str, Any] = {
+            "textures": {"0": f"{namespace}:entity/bed/{path}"},
+            "elements": [
+                {
+                    "from": [0, 0, 13],
+                    "to": [3, 3, 16],
+                    "faces": {
+                        "north": {"uv": [14.75, 5.25, 15.5, 6], "texture": "#0"},
+                        "east": {"uv": [14, 5.25, 14.75, 6], "texture": "#0"},
+                        "south": {"uv": [13.25, 5.25, 14, 6], "texture": "#0"},
+                        "west": {"uv": [12.5, 5.25, 13.25, 6], "texture": "#0"},
+                        "up": {
+                            "uv": [13.25, 4.5, 14, 5.25],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [14.75, 4.5, 14, 5.25],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [0, 3, -16],
+                    "to": [16, 9, 0],
+                    "faces": {
+                        "north": {
+                            "uv": [5.5, 5.5, 9.5, 7],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "east": {
+                            "uv": [0, 7, 1.5, 11],
+                            "rotation": 270,
+                            "texture": "#0",
+                        },
+                        "west": {
+                            "uv": [5.5, 7, 7, 11],
+                            "rotation": 90,
+                            "texture": "#0",
+                        },
+                        "up": {
+                            "uv": [1.5, 7, 5.5, 11],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [11, 11, 7, 7],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [0, 0, -16],
+                    "to": [3, 3, -13],
+                    "faces": {
+                        "north": {"uv": [12.5, 3.75, 13.25, 4.5], "texture": "#0"},
+                        "east": {"uv": [14.75, 3.75, 15.5, 4.5], "texture": "#0"},
+                        "south": {"uv": [14, 3.75, 14.75, 4.5], "texture": "#0"},
+                        "west": {"uv": [13.25, 3.75, 14, 4.5], "texture": "#0"},
+                        "up": {
+                            "uv": [13.25, 3, 14, 3.75],
+                            "rotation": 90,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [14.75, 3, 14, 3.75],
+                            "rotation": 90,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [13, 0, -16],
+                    "to": [16, 3, -13],
+                    "faces": {
+                        "north": {"uv": [13.25, 0.75, 14, 1.5], "texture": "#0"},
+                        "east": {"uv": [12.5, 0.75, 13.25, 1.5], "texture": "#0"},
+                        "south": {"uv": [14.75, 0.75, 15.5, 1.5], "texture": "#0"},
+                        "west": {"uv": [14, 0.75, 14.75, 1.5], "texture": "#0"},
+                        "up": {"uv": [13.25, 0, 14, 0.75], "texture": "#0"},
+                        "down": {"uv": [14.75, 0, 14, 0.75], "texture": "#0"},
+                    },
+                },
+                {
+                    "from": [0, 3, 0],
+                    "to": [16, 9, 16],
+                    "faces": {
+                        "east": {
+                            "uv": [0, 1.5, 1.5, 5.5],
+                            "rotation": 270,
+                            "texture": "#0",
+                        },
+                        "south": {
+                            "uv": [1.5, 0, 5.5, 1.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "west": {
+                            "uv": [5.5, 1.5, 7, 5.5],
+                            "rotation": 90,
+                            "texture": "#0",
+                        },
+                        "up": {
+                            "uv": [1.5, 1.5, 5.5, 5.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [11, 5.5, 7, 1.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [13, 0, 13],
+                    "to": [16, 3, 16],
+                    "faces": {
+                        "north": {"uv": [14, 2.25, 14.75, 3], "texture": "#0"},
+                        "east": {"uv": [13.25, 2.25, 14, 3], "texture": "#0"},
+                        "south": {"uv": [12.5, 2.25, 13.25, 3], "texture": "#0"},
+                        "west": {"uv": [14.75, 2.25, 15.5, 3], "texture": "#0"},
+                        "up": {
+                            "uv": [13.25, 1.5, 14, 2.25],
+                            "rotation": 270,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [14, 1.5, 14.75, 2.25],
+                            "rotation": 270,
+                            "texture": "#0",
+                        },
+                    },
+                },
+            ],
+        }
+        return model
 
-class SpecialModelBanner(SpecialModelBase):
+
+class SpecialModelBaseLayer(SpecialModelBase):
+    COLOR_STRING_TO_ARGB: ClassVar[dict[str, int]] = {
+        "white": 16383998,
+        "orange": 16351261,
+        "magenta": 13061821,
+        "light_blue": 3847130,
+        "yellow": 16701501,
+        "lime": 8439583,
+        "pink": 15961002,
+        "gray": 4673362,
+        "light_gray": 10329495,
+        "cyan": 1481884,
+        "purple": 8991416,
+        "blue": 3949738,
+        "brown": 8606770,
+        "green": 6192150,
+        "red": 11546150,
+        "black": 1908001,
+    }
+
+    base_texture: ClassVar[str]
+    base_texture_nopattern: ClassVar[str]
+
+    @property
+    def entity_type(self) -> str:
+        return resolve_key(self.type).split(":")[-1]
+
+    def get_base_color(self, item: Item) -> str | None:
+        raise NotImplementedError("This method should be implemented in subclasses")
+
+    def get_color(self, color: str) -> TintSourceConstant:
+        if color not in self.COLOR_STRING_TO_ARGB:
+            raise ValueError(f"Invalid color {color} for shield")
+        argb = self.COLOR_STRING_TO_ARGB[color]
+        argb = to_argb(argb)
+        return TintSourceConstant(type="constant", value=(argb[1], argb[2], argb[3]))
+
+    def get_texture(self, getter: PackGetterV2, item: Item) -> TextureSource:
+        if not (base_color := self.get_base_color(item)):
+            return self.base_texture_nopattern
+        res: list[MultiTexture] = []
+        res.append((self.base_texture, None))
+        res.append(
+            (f"minecraft:entity/{self.entity_type}/base", self.get_color(base_color))
+        )
+
+        for pattern in item.components.get("minecraft:banner_patterns", []):
+            pattern_id = resolve_key(pattern["pattern"])
+            namespace, path = pattern_id.split(":")
+            res.append(
+                (
+                    f"{namespace}:entity/{self.entity_type}/{path}",
+                    self.get_color(pattern["color"]),
+                )
+            )
+
+        return tuple(res)
+
+
+class SpecialModelBanner(SpecialModelBaseLayer):
     type: Literal["minecraft:banner", "banner"]
     color: str
     COLOR_STRING_TO_ARGB: dict[str, int] = {
@@ -224,6 +427,135 @@ class SpecialModelBanner(SpecialModelBase):
         }
         return model
 
+    base_texture: ClassVar[str] = "minecraft:entity/banner_base"
+    base_texture_nopattern: ClassVar[str] = "minecraft:entity/banner_base"
+
+    def get_base_color(self, item: Item) -> str | None:
+        return self.color
+
+    def get_scale(self) -> float:
+        return 0.75 / 0.5325
+
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        texture = self.get_texture(getter, item)
+        res = {
+            "textures": {
+                "0": texture,
+            },
+            "elements": [
+                {
+                    "from": [7.5, 1.5, 7.5],
+                    "to": [8.5, 22.5, 8.5],
+                    "rotation": {"angle": 0, "axis": "y", "origin": [8, 2, 8]},
+                    "faces": {
+                        "north": {"uv": [12.5, 0.5, 13, 11], "texture": "#0"},
+                        "east": {"uv": [12, 0.5, 12.5, 11], "texture": "#0"},
+                        "south": {"uv": [11.5, 0.5, 12, 11], "texture": "#0"},
+                        "west": {"uv": [11, 0.5, 11.5, 11], "texture": "#0"},
+                        "up": {
+                            "uv": [11.5, 0, 12, 0.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [12, 0, 12.5, 0.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [3, 22.5, 7.5],
+                    "to": [13, 23.5, 8.5],
+                    "rotation": {"angle": 0, "axis": "y", "origin": [8, 24, 8]},
+                    "faces": {
+                        "north": {"uv": [6, 11, 11, 11.5], "texture": "#0"},
+                        "east": {"uv": [5.5, 11, 6, 11.5], "texture": "#0"},
+                        "south": {"uv": [0.5, 11, 5.5, 11.5], "texture": "#0"},
+                        "west": {"uv": [0, 11, 0.5, 11.5], "texture": "#0"},
+                        "up": {"uv": [0.5, 10.5, 5.5, 11], "texture": "#0"},
+                        "down": {"uv": [5.5, 10.5, 10.5, 11], "texture": "#0"},
+                    },
+                },
+                {
+                    "from": [3, 3.5, 8.5],
+                    "to": [13, 23.5, 9.5],
+                    "rotation": {"angle": 0, "axis": "y", "origin": [9, 4, 9]},
+                    "faces": {
+                        "north": {"uv": [5.5, 0.25, 10.5, 10.25], "texture": "#0"},
+                        "east": {"uv": [5.25, 0.25, 5.5, 10.25], "texture": "#0"},
+                        "south": {"uv": [0.25, 0.25, 5.25, 10.25], "texture": "#0"},
+                        "west": {"uv": [0, 0.25, 0.25, 10.25], "texture": "#0"},
+                        "up": {"uv": [0.25, 0, 5.25, 0.25], "texture": "#0"},
+                        "down": {"uv": [5.25, 0, 10.25, 0.25], "texture": "#0"},
+                    },
+                },
+            ],
+        }
+        return res
+
+
+class SpecialModelShield(SpecialModelBaseLayer):
+    type: Literal["minecraft:shield", "shield"]
+
+    base_texture: ClassVar[str] = "minecraft:entity/shield_base"
+    base_texture_nopattern: ClassVar[str] = "minecraft:entity/shield_base_nopattern"
+
+    def get_base_color(self, item: Item) -> str | None:
+        if not (base_color := item.components.get("minecraft:base_color")):
+            return None
+        return base_color
+
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        texture = self.get_texture(getter, item)
+        res = {
+            "textures": {"0": texture},
+            "elements": [
+                {
+                    "from": [-6, -11, 1],
+                    "to": [6, 11, 2],
+                    "faces": {
+                        "north": {"uv": [3.5, 0.25, 6.5, 5.75], "texture": "#0"},
+                        "east": {"uv": [3.25, 0.25, 3.5, 5.75], "texture": "#0"},
+                        "south": {"uv": [0.25, 0.25, 3.25, 5.75], "texture": "#0"},
+                        "west": {"uv": [0, 0.25, 0.25, 5.75], "texture": "#0"},
+                        "up": {
+                            "uv": [0.25, 0, 3, 0.25],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [3.25, 0, 6.25, 0.25],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [-1, -3, -5],
+                    "to": [1, 3, 1],
+                    "faces": {
+                        "north": {"uv": [10, 1.5, 10.5, 3], "texture": "#0"},
+                        "east": {"uv": [8.5, 1.5, 10, 3], "texture": "#0"},
+                        "south": {"uv": [8, 1.5, 8.5, 3], "texture": "#0"},
+                        "west": {"uv": [6.5, 1.5, 8, 3], "texture": "#0"},
+                        "up": {
+                            "uv": [8, 0, 8.5, 1.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [8.5, 0, 9, 1.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+            ],
+            "gui_light": "front",
+        }
+
+        return res
 
 
 class SpecialModelConduit(SpecialModelBase):
@@ -440,7 +772,7 @@ class SpecialModelPlayerHead(SpecialModelBaseHead):
             return DEFAULT_TEXTURE
         if not "minecraft:profile" in item.components:
             return DEFAULT_TEXTURE
-        cache = getter._ctx.cache["model_resolver"]
+        cache = getter._ctx.cache["model_resolver_player_skin"]
         if not isinstance(item.components["minecraft:profile"], str):
             profile = ProfileComponent.model_validate(
                 item.components["minecraft:profile"]
@@ -951,142 +1283,183 @@ class SpecialModelShulkerBox(SpecialModelBase):
                 raise ValueError(f"Invalid orientation {self.orientation}")
 
 
-class SpecialModelShield(SpecialModelBase):
-    type: Literal["minecraft:shield", "shield"]
-    COLOR_STRING_TO_ARGB: dict[str, int] = {
-        "white": 0xF9FFFE,
-        "orange": 16351261,
-        "magenta": 13061821,
-        "light_blue": 3847130,
-        "yellow": 16701501,
-        "lime": 8439583,
-        "pink": 15961002,
-        "gray": 4673362,
-        "light_gray": 0x9D9D97,
-        "cyan": 1481884,
-        "purple": 8991416,
-        "blue": 3949738,
-        "brown": 8606770,
-        "green": 6192150,
-        "red": 11546150,
-        "black": 0x1D1D21,
-    }
-    STEP: float = 0.0005
-
-    def get_tints(self, getter: PackGetterV2, item: Item) -> list[TintSource]:
-        res: list[TintSource] = []
-        if "minecraft:base_color" in item.components:
-            color = item.components["minecraft:base_color"]
-            color = self.COLOR_STRING_TO_ARGB[color]
-            color = to_argb(color)
-            color = (color[1], color[2], color[3])
-            res.append(TintSourceConstant(type="constant", value=color))
-            for pattern in item.components.get("minecraft:banner_patterns", []):
-                color = pattern["color"]
-                color = self.COLOR_STRING_TO_ARGB[color]
-                color = to_argb(color)
-                color = (color[1], color[2], color[3])
-                res.append(TintSourceConstant(type="constant", value=color))
-        return res
-
-    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
-        texture = "minecraft:entity/shield_base_nopattern"
-        additionnal_textures = {}
-        additionnal_elements = []
-        if "minecraft:base_color" in item.components:
-            texture = "minecraft:entity/shield_base"
-            additionnal_textures["1"] = "minecraft:entity/shield/base"
-            additionnal_elements.append(
-                {
-                    "from": [-6, -11, 1 + self.STEP],
-                    "to": [6, 11, 2 + self.STEP],
-                    "faces": {
-                        "south": {
-                            "uv": [0.25, 0.25, 3.25, 5.75],
-                            "texture": "#1",
-                            "tintindex": 0,
-                        },
-                    },
-                }
-            )
-            for i, pattern in enumerate(
-                item.components.get("minecraft:banner_patterns", [])
-            ):
-                pattern_id = resolve_key(pattern["pattern"])
-                namespace, path = pattern_id.split(":")
-                additionnal_textures[f"{i+2}"] = f"{namespace}:entity/shield/{path}"
-                step = self.STEP * (i + 2)
-                additionnal_elements.append(
-                    {
-                        "from": [-6, -11, 1 + step],
-                        "to": [6, 11, 2 + step],
-                        "faces": {
-                            "south": {
-                                "uv": [0.25, 0.25, 3.25, 5.75],
-                                "texture": f"#{i+2}",
-                                "tintindex": i + 1,
-                            },
-                        },
-                    }
-                )
-
-        res = {
-            "textures": {"0": texture, **additionnal_textures},
-            "elements": [
-                {
-                    "from": [-6, -11, 1],
-                    "to": [6, 11, 2],
-                    "faces": {
-                        "north": {"uv": [3.5, 0.25, 6.5, 5.75], "texture": "#0"},
-                        "east": {"uv": [3.25, 0.25, 3.5, 5.75], "texture": "#0"},
-                        "south": {"uv": [0.25, 0.25, 3.25, 5.75], "texture": "#0"},
-                        "west": {"uv": [0, 0.25, 0.25, 5.75], "texture": "#0"},
-                        "up": {
-                            "uv": [0.25, 0, 3, 0.25],
-                            "rotation": 180,
-                            "texture": "#0",
-                        },
-                        "down": {
-                            "uv": [3.25, 0, 6.25, 0.25],
-                            "rotation": 180,
-                            "texture": "#0",
-                        },
-                    },
-                },
-                {
-                    "from": [-1, -3, -5],
-                    "to": [1, 3, 1],
-                    "faces": {
-                        "north": {"uv": [10, 1.5, 10.5, 3], "texture": "#0"},
-                        "east": {"uv": [8.5, 1.5, 10, 3], "texture": "#0"},
-                        "south": {"uv": [8, 1.5, 8.5, 3], "texture": "#0"},
-                        "west": {"uv": [6.5, 1.5, 8, 3], "texture": "#0"},
-                        "up": {
-                            "uv": [8, 0, 8.5, 1.5],
-                            "rotation": 180,
-                            "texture": "#0",
-                        },
-                        "down": {
-                            "uv": [8.5, 0, 9, 1.5],
-                            "rotation": 180,
-                            "texture": "#0",
-                        },
-                    },
-                },
-                *additionnal_elements,
-            ],
-            "gui_light": "front",
-        }
-
-        return res
-
-
 class SpecialModelTrident(SpecialModelBase):
     type: Literal["minecraft:trident", "trident"]
+
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        hauteur = -11
+        return {
+            "textures": {
+                "0": "minecraft:entity/trident",
+            },
+            "elements": [
+                {
+                    "from": [-0.5, -16 + hauteur, -0.5],
+                    "to": [0.5, 9 + hauteur, 0.5],
+                    "faces": {
+                        "north": {"uv": [1.5, 3.5, 2, 16], "texture": "#0"},
+                        "east": {"uv": [1, 3.5, 1.5, 16], "texture": "#0"},
+                        "south": {"uv": [0.5, 3.5, 1, 16], "texture": "#0"},
+                        "west": {"uv": [0, 3.5, 0.5, 16], "texture": "#0"},
+                        "up": {
+                            "uv": [0.5, 3, 1, 3.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [1, 3, 1.5, 3.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [-1.5, 9 + hauteur, -0.5],
+                    "to": [1.5, 11 + hauteur, 0.5],
+                    "faces": {
+                        "north": {"uv": [4.5, 0.5, 6, 1.5], "texture": "#0"},
+                        "east": {"uv": [4, 0.5, 4.5, 1.5], "texture": "#0"},
+                        "south": {"uv": [2.5, 0.5, 4, 1.5], "texture": "#0"},
+                        "west": {"uv": [2, 0.5, 2.5, 1.5], "texture": "#0"},
+                        "up": {
+                            "uv": [2.5, 0, 4, 0.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [4, 0, 5.5, 0.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [-0.5, 11 + hauteur, -0.5],
+                    "to": [0.5, 15 + hauteur, 0.5],
+                    "faces": {
+                        "north": {"uv": [1.5, 0.5, 2, 2.5], "texture": "#0"},
+                        "east": {"uv": [1, 0.5, 1.5, 2.5], "texture": "#0"},
+                        "south": {"uv": [0.5, 0.5, 1, 2.5], "texture": "#0"},
+                        "west": {"uv": [0, 0.5, 0.5, 2.5], "texture": "#0"},
+                        "up": {
+                            "uv": [0.5, 0, 1, 0.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [1, 0, 1.5, 0.5],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [-2.5, 10 + hauteur, -0.5],
+                    "to": [-1.5, 14 + hauteur, 0.5],
+                    "faces": {
+                        "north": {"uv": [3.5, 2, 4, 4], "texture": "#0"},
+                        "east": {"uv": [3, 2, 3.5, 4], "texture": "#0"},
+                        "south": {"uv": [2.5, 2, 3, 4], "texture": "#0"},
+                        "west": {"uv": [2, 2, 2.5, 4], "texture": "#0"},
+                        "up": {
+                            "uv": [2.5, 1.5, 3, 2],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [3, 1.5, 3.5, 2],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+                {
+                    "from": [1.5, 10 + hauteur, -0.5],
+                    "to": [2.5, 14 + hauteur, 0.5],
+                    "faces": {
+                        "north": {"uv": [3.5, 2, 4, 4], "texture": "#0"},
+                        "east": {"uv": [2, 2, 2.5, 4], "texture": "#0"},
+                        "south": {"uv": [2.5, 2, 3, 4], "texture": "#0"},
+                        "west": {"uv": [3, 2, 3.5, 4], "texture": "#0"},
+                        "up": {
+                            "uv": [2.5, 1.5, 3, 2],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                        "down": {
+                            "uv": [3, 1.5, 3.5, 2],
+                            "rotation": 180,
+                            "texture": "#0",
+                        },
+                    },
+                },
+            ],
+        }
 
 
 class SpecialModelDecoratedPot(SpecialModelBase):
     type: Literal["minecraft:decorated_pot", "decorated_pot"]
+
+    def get_texture(self, pot_decorations: list[str] | None, index: int) -> str:
+        if pot_decorations is None or index >= len(pot_decorations):
+            return "minecraft:entity/decorated_pot/decorated_pot_side"
+        decoration = resolve_key(pot_decorations[index])
+        if decoration == "minecraft:brick":
+            return "minecraft:entity/decorated_pot/decorated_pot_side"
+        namespace, path = decoration.split(":", 1)
+        return f"{namespace}:entity/decorated_pot/{path.removesuffix("_sherd")}_pattern"
+
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        pot_decorations = item.components.get("minecraft:pot_decorations", None)
+
+        model: dict[str, Any] = {
+            "textures": {
+                "base": "minecraft:entity/decorated_pot/decorated_pot_base",
+                "north": self.get_texture(pot_decorations, 0),
+                "east": self.get_texture(pot_decorations, 2),
+                "south": self.get_texture(pot_decorations, 3),
+                "west": self.get_texture(pot_decorations, 1),
+            },
+            "elements": [
+                {
+                    "from": [4.1, 17.1, 4.1],
+                    "to": [11.9, 19.9, 11.9],
+                    "faces": {
+                        "north": {"uv": [12, 4, 16, 5.5], "texture": "#base"},
+                        "east": {"uv": [8, 4, 12, 5.5], "texture": "#base"},
+                        "south": {"uv": [4, 4, 8, 5.5], "texture": "#base"},
+                        "west": {"uv": [0, 4, 3.5, 5.5], "texture": "#base"},
+                        "up": {"uv": [4, 0, 8, 4], "texture": "#base"},
+                        "down": {"uv": [8, 4, 12, 0], "texture": "#base"},
+                    },
+                },
+                {
+                    "from": [4.8, 15.8, 4.8],
+                    "to": [11.2, 17.2, 11.2],
+                    "faces": {
+                        "north": {"uv": [9, 5.5, 12, 6], "texture": "#base"},
+                        "east": {"uv": [6, 5.5, 9, 6], "texture": "#base"},
+                        "south": {"uv": [3, 5.5, 6, 6], "texture": "#base"},
+                        "west": {"uv": [0, 5.5, 3, 6], "texture": "#base"},
+                        "up": {"uv": [3, 2.5, 6, 5.5], "texture": "#base"},
+                        "down": {"uv": [6, 5.5, 9, 2.5], "texture": "#base"},
+                    },
+                },
+                {
+                    "from": [1, 0, 1],
+                    "to": [15, 16, 15],
+                    "faces": {
+                        "north": {"uv": [1, 0, 15, 16], "texture": "#north"},
+                        "east": {"uv": [1, 0, 15, 16], "texture": "#east"},
+                        "south": {"uv": [1, 0, 15, 16], "texture": "#south"},
+                        "west": {"uv": [1, 0, 15, 16], "texture": "#west"},
+                        "up": {"uv": [7, 13.5, 14, 6.5], "texture": "#base"},
+                        "down": {"uv": [0, 6.5, 7, 13.5], "texture": "#base"},
+                    },
+                },
+            ],
+        }
+        return model
 
     def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
         model: dict[str, Any] = {
@@ -1154,6 +1527,7 @@ wood_types = Literal[
     "warped",
 ]
 
+
 class SpecialModelSignBase(SpecialModelBase):
     texture: Optional[str] = None
     wood_type: wood_types
@@ -1169,6 +1543,7 @@ class SpecialModelSignBase(SpecialModelBase):
             return f"minecraft:entity/signs/hanging/{self.wood_type}"
         raise NotImplementedError()
 
+
 class SpecialModelStandingSign(SpecialModelSignBase):
     type: Literal["minecraft:standing_sign", "standing_sign"]
 
@@ -1176,49 +1551,75 @@ class SpecialModelStandingSign(SpecialModelSignBase):
         return 0.75
 
     def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
-        texture = self.used_texture
+        self.used_texture
         return {
-	"credit": "Made with Blockbench",
-	"textures": {
-		"0": "entity/signs/jungle",
-		"particle": "entity/signs/jungle"
-	},
-	"elements": [
-		{
-			"from": [7, -6, 7],
-			"to": [9, 8, 9],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, -8, 7]},
-			"faces": {
-				"north": {"uv": [0.5, 8, 1, 15], "texture": "#0"},
-				"east": {"uv": [0, 8, 0.5, 15], "texture": "#0"},
-				"south": {"uv": [1.5, 8, 2, 15], "texture": "#0"},
-				"west": {"uv": [1, 8, 1.5, 15], "texture": "#0"},
-				"up": {"uv": [1, 8, 0.5, 7], "texture": "#0"},
-				"down": {"uv": [1.5, 7, 1, 8], "texture": "#0"}
-			}
-		},
-		{
-			"from": [-4, 8, 7],
-			"to": [20, 20, 9],
-			"rotation": {"angle": 0, "axis": "y", "origin": [-4, 6, 7]},
-			"faces": {
-				"north": {"uv": [0.5, 1, 6.5, 7], "texture": "#0"},
-				"east": {"uv": [0, 1, 0.5, 7], "texture": "#0"},
-				"south": {"uv": [7, 1, 13, 7], "texture": "#0"},
-				"west": {"uv": [6.5, 1, 7, 7], "texture": "#0"},
-				"up": {"uv": [6.5, 1, 0.5, 0], "texture": "#0"},
-				"down": {"uv": [12.5, 0, 6.5, 1], "texture": "#0"}
-			}
-		}
-	]
-}
-
-    
+            "credit": "Made with Blockbench",
+            "textures": {"0": "entity/signs/jungle", "particle": "entity/signs/jungle"},
+            "elements": [
+                {
+                    "from": [7, -6, 7],
+                    "to": [9, 8, 9],
+                    "rotation": {"angle": 0, "axis": "y", "origin": [0, -8, 7]},
+                    "faces": {
+                        "north": {"uv": [0.5, 8, 1, 15], "texture": "#0"},
+                        "east": {"uv": [0, 8, 0.5, 15], "texture": "#0"},
+                        "south": {"uv": [1.5, 8, 2, 15], "texture": "#0"},
+                        "west": {"uv": [1, 8, 1.5, 15], "texture": "#0"},
+                        "up": {"uv": [1, 8, 0.5, 7], "texture": "#0"},
+                        "down": {"uv": [1.5, 7, 1, 8], "texture": "#0"},
+                    },
+                },
+                {
+                    "from": [-4, 8, 7],
+                    "to": [20, 20, 9],
+                    "rotation": {"angle": 0, "axis": "y", "origin": [-4, 6, 7]},
+                    "faces": {
+                        "north": {"uv": [0.5, 1, 6.5, 7], "texture": "#0"},
+                        "east": {"uv": [0, 1, 0.5, 7], "texture": "#0"},
+                        "south": {"uv": [7, 1, 13, 7], "texture": "#0"},
+                        "west": {"uv": [6.5, 1, 7, 7], "texture": "#0"},
+                        "up": {"uv": [6.5, 1, 0.5, 0], "texture": "#0"},
+                        "down": {"uv": [12.5, 0, 6.5, 1], "texture": "#0"},
+                    },
+                },
+            ],
+        }
 
 
 class SpecialModelHangingSign(SpecialModelSignBase):
     type: Literal["minecraft:hanging_sign", "hanging_sign"]
 
+    def get_model(self, getter: PackGetterV2, item: Item) -> dict[str, Any]:
+        res = {
+            "textures": {
+                "0": self.used_texture,
+            },
+            "elements": [
+                {
+                    "from": [1, 0, 7],
+                    "to": [15, 10, 9],
+                    "rotation": {"angle": 0, "axis": "y", "origin": [1, 0, 7]},
+                    "faces": {
+                        "north": {"uv": [4.5, 7, 8, 12], "texture": "#0"},
+                        "east": {"uv": [4, 7.25, 4.5, 12], "texture": "#0"},
+                        "south": {"uv": [0.5, 7, 4, 12], "texture": "#0"},
+                        "west": {"uv": [0, 7, 0.5, 12], "texture": "#0"},
+                        "up": {"uv": [0.5, 6, 4, 7], "texture": "#0"},
+                        "down": {"uv": [4, 7, 7.5, 6], "texture": "#0"},
+                    },
+                },
+                {
+                    "from": [2, 10, 8],
+                    "to": [14, 16, 8],
+                    "rotation": {"angle": 0, "axis": "y", "origin": [2, 10, 8]},
+                    "faces": {
+                        "north": {"uv": [6.5, 3, 3.5, 6], "texture": "#0"},
+                        "south": {"uv": [3.5, 3, 6.5, 6], "texture": "#0"},
+                    },
+                },
+            ],
+        }
+        return res
 
 
 type SpecialModel = Union[

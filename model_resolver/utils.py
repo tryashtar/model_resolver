@@ -14,7 +14,7 @@ import logging
 
 from beet.contrib.vanilla import Vanilla, Release
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("model_resolver")
 
 DEFAULT_RENDER_SIZE = 256
 
@@ -52,6 +52,7 @@ class ModelResolverOptions(BaseModel):
     special_rendering: bool = False
     colorize_blocks: bool = True
     preferred_minecraft_generated: Literal["misode/mcmeta", "java"] = "misode/mcmeta"
+    transparent_missingno: bool = True
 
 
 @dataclass
@@ -74,7 +75,6 @@ class PackGetterV2[T: Pack]:
             assets.merge(rp)
 
         assets.merge(ctx.assets)
-        
 
         data = DataPack()
         data.merge(release.data)
@@ -111,7 +111,7 @@ def get_default_components(ctx: Context, release: Release) -> dict[str, Any]:
             jar = release.cache.download(
                 release.info.data["downloads"]["server"]["url"]
             )
-            cache = ctx.cache["model_resolver"]
+            cache = ctx.cache["model_resolver_components"]
             path = cache.get_path("minecraft_reports")
             if not path.is_dir():
                 os.makedirs(path, exist_ok=True)

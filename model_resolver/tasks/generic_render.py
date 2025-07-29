@@ -1,3 +1,4 @@
+from pathlib import Path
 from OpenGL.GL import *  # type: ignore
 from OpenGL.GLUT import *  # type: ignore
 from OpenGL.GLU import *  # type: ignore
@@ -11,12 +12,17 @@ from model_resolver.item_model.item import Item
 from model_resolver.utils import (
     PackGetterV2,
     resolve_key,
+    log,
 )
 from model_resolver.minecraft_model import (
     MinecraftModel,
     ElementModel,
+    MultiTextureResolved,
+    ResolvableTexture,
+    ResolvedTexture,
     RotationModel,
     FaceModel,
+    TextureSource,
 )
 from model_resolver.item_model.tint_source import TintSource
 from typing import Any, Optional, Generator, Literal
@@ -24,6 +30,10 @@ from PIL import Image
 from model_resolver.tasks.base import Task, RenderError
 from math import pi, cos, sin, sqrt
 from rich import print  # noqa
+
+
+type TextureBindingsValue = tuple[tuple[tuple[int, TintSource | None], ...], str]
+type TextureBindings = dict[str, TextureBindingsValue]
 
 
 class FrameModel(BaseModel):
@@ -80,7 +90,10 @@ class GenericModelRenderTask(Task):
         for key, value in model.textures.items():
             if isinstance(value, Image.Image):
                 raise RenderError(f"WTF is going on")
-            if resolve_key(value) in [resolve_key(k) for k in images.keys()]:
+            elif isinstance(value, tuple):
+                for texture, tint in value:
+                    ...
+            elif resolve_key(value) in [resolve_key(k) for k in images.keys()]:
                 textures[key] = images[value]
             else:
                 textures[key] = value
@@ -104,67 +117,125 @@ class GenericModelRenderTask(Task):
         glScalef(scale[0], scale[1], scale[2])
 
     def get_real_key(
-        self, key: str, textures: dict[str, str | Image.Image], max_depth: int = 10
-    ) -> str | Image.Image:
+        self, key: str, textures: dict[str, TextureSource], max_depth: int = 10
+    ) -> ResolvableTexture:
         if max_depth == 0:
-            return "__not_found__"
+            return None
         if key not in textures:
-            return "__not_found__"
+            return None
         value = textures[key]
         if isinstance(value, Image.Image):
-            return textures[key]
-        if value[0] == "#":
-            return self.get_real_key(value[1:], textures, max_depth - 1)
+            return value
+        if isinstance(value, tuple):
+            return value
+        elif isinstance(value, str):
+            if value[0] == "#":
+                return self.get_real_key(value[1:], textures, max_depth - 1)
+            else:
+                return value
         else:
-            return textures[key]
+            raise RenderError(f"Unknown texture type {type(value)} for key {key}")
+
+    def get_missingno(self) -> Image.Image:
+        """Returns a missingno image for debugging purposes."""
+        if self.getter.opts.transparent_missingno:
+            return Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+        path = Path(__file__).parent.parent / "missingno.png"
+        if not path.exists():
+            raise RenderError(f"Missingno image not found at {path}")
+        return Image.open(path).convert("RGBA")
 
     def load_textures(
         self, model: MinecraftModel
-    ) -> dict[str, tuple[Image.Image, str]]:
-        res: dict[str, tuple[Image.Image, str]] = {}
+    ) -> dict[str, tuple[ResolvedTexture, str]]:
+        res: dict[str, tuple[ResolvedTexture, str]] = {}
         for key in model.textures.keys():
             value = self.get_real_key(key, model.textures)
-            if value == "__not_found__":
-                res[key] = (Image.new("RGBA", (16, 16), (0, 0, 0, 0)), "")
+            if value is None:
+                res[key] = (self.get_missingno(), "empty")
+                log.warning(f"Texture {key} not found in model")
             elif isinstance(value, Image.Image):
                 res[key] = (value, "dynamic")
+            elif isinstance(value, tuple):
+                # if value is a tuple, it means it's a multi-texture
+                textures: list[MultiTextureResolved] = []
+                for texture, tint in value:
+                    path = resolve_key(texture)
+                    if path in self.getter.assets.textures:
+                        texture = self.getter.assets.textures[path]
+                        img: Image.Image = texture.image
+                    elif path in self.dynamic_textures:
+                        texture = Texture(self.dynamic_textures[path])
+                        img = texture.image
+                    else:
+                        img = self.get_missingno()
+                        log.warning(f"Texture {key} not found at {path}")
+
+                    img = img.convert("RGBA")
+                    textures.append((img, tint))
+                res[key] = (tuple(textures), key)
             else:
-                path = f"minecraft:{value}" if ":" not in value else value
+                path = resolve_key(value)
                 if path in self.getter.assets.textures:
                     texture = self.getter.assets.textures[path]
+                    img: Image.Image = texture.image
                 elif path in self.dynamic_textures:
                     texture = Texture(self.dynamic_textures[path])
+                    img = texture.image
                 else:
-                    texture = Texture(Image.new("RGBA", (16, 16), (0, 0, 0, 0)))
-                img: Image.Image = texture.image
+                    img = self.get_missingno()
+                    log.warning(f"Texture {key} not found at {path}")
                 img = img.convert("RGBA")
                 res[key] = (img, path)
         return res
 
-    def generate_textures_bindings(
-        self, model: MinecraftModel
-    ) -> dict[str, tuple[int, str]]:
-        res: dict[str, tuple[int, str]] = {}
+    def generate_textures_bindings(self, model: MinecraftModel):
+        res: TextureBindings = {}
         textures = self.load_textures(model)
         for key, (value, path) in textures.items():
-            tex_id = glGenTextures(1)
-            glBindTexture(GL_TEXTURE_2D, tex_id)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-            value = value.convert("RGBA")
-            img_data = value.tobytes("raw", "RGBA")
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_RGBA,
-                value.width,
-                value.height,
-                0,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                img_data,
-            )
-            res[key] = (tex_id, path)
+            if isinstance(value, Image.Image):
+                tex_id: int = glGenTextures(1)
+                glBindTexture(GL_TEXTURE_2D, tex_id)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+                value = value.convert("RGBA")
+                img_data = value.tobytes("raw", "RGBA")
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RGBA,
+                    value.width,
+                    value.height,
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    img_data,
+                )
+                res[key] = (((tex_id, None),), path)
+            elif isinstance(value, tuple):
+                res_value: list[tuple[int, TintSource | None]] = []
+                for img, tint in value:
+                    tex_id: int = glGenTextures(1)
+                    glBindTexture(GL_TEXTURE_2D, tex_id)
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+                    img = img.convert("RGBA")
+                    img_data = img.tobytes("raw", "RGBA")
+                    glTexImage2D(
+                        GL_TEXTURE_2D,
+                        0,
+                        GL_RGBA,
+                        img.width,
+                        img.height,
+                        0,
+                        GL_RGBA,
+                        GL_UNSIGNED_BYTE,
+                        img_data,
+                    )
+                    res_value.append((tex_id, tint))
+                res[key] = (tuple(res_value), path)
+            else:
+                raise RenderError(f"Unknown texture type {type(value)} for key {key}")
         return res
 
     def render_model(self, model: MinecraftModel, tints: list[TintSource]):
@@ -196,10 +267,9 @@ class GenericModelRenderTask(Task):
     def draw_element(
         self,
         element: ElementModel,
-        textures_bindings: dict[str, tuple[int, str]],
+        textures_bindings: TextureBindings,
         tints: list[TintSource],
     ):
-        glEnable(GL_TEXTURE_2D)
 
         from_element_centered, to_element_centered = self.center_element(
             element.from_, element.to
@@ -211,30 +281,41 @@ class GenericModelRenderTask(Task):
         for rotation in self.additional_rotations:
             vertices = self.rotate_vertices(vertices, rotation)
 
-        texture_used = [
-            element.faces.get("down", None),
-            element.faces.get("up", None),
-            element.faces.get("north", None),
-            element.faces.get("south", None),
-            element.faces.get("west", None),
-            element.faces.get("east", None),
-        ]
-        texture_used = [x.texture.lstrip("#") for x in texture_used if x is not None]
-        texture_used = list(set(texture_used))
+        # texture_used = [
+        #     element.faces.get("down", None),
+        #     element.faces.get("up", None),
+        #     element.faces.get("north", None),
+        #     element.faces.get("south", None),
+        #     element.faces.get("west", None),
+        #     element.faces.get("east", None),
+        # ]
+        # texture_used = [x.texture.lstrip("#") for x in texture_used if x is not None]
+        # texture_used = list(set(texture_used))
 
-        for texture in texture_used:
-            if texture not in textures_bindings:
+        # for texture in texture_used:
+        #     if texture not in textures_bindings:
+        #         continue
+        #     glBindTexture(GL_TEXTURE_2D, textures_bindings[texture][0])
+        #     glColor3f(1.0, 1.0, 1.0)
+        #     # get all the faces with the same texture
+        #     for face, data in element.faces.items():
+        #         if data.texture.lstrip("#") == texture:
+        #             self.draw_face(
+        #                 face, data, vertices, element.from_, element.to, tints, texture
+        #             )
+
+        for face, data in element.faces.items():
+            if (textvar := data.texture.lstrip("#")) not in textures_bindings:
                 continue
-            glBindTexture(GL_TEXTURE_2D, textures_bindings[texture][0])
-            glColor3f(1.0, 1.0, 1.0)
-            # get all the faces with the same texture
-            for face, data in element.faces.items():
-                if data.texture.lstrip("#") == texture:
-                    self.draw_face(
-                        face, data, vertices, element.from_, element.to, tints, texture
-                    )
-
-        glDisable(GL_TEXTURE_2D)
+            self.draw_face(
+                face,
+                data,
+                vertices,
+                element.from_,
+                element.to,
+                tints,
+                textures_bindings[textvar],
+            )
 
     def center_element(
         self,
@@ -336,7 +417,7 @@ class GenericModelRenderTask(Task):
         from_element: tuple[float, float, float],
         to_element: tuple[float, float, float],
         tints: list[TintSource],
-        texture: Optional[str] = None,
+        bindings: TextureBindingsValue,
     ):
 
         if data.uv:
@@ -410,22 +491,49 @@ class GenericModelRenderTask(Task):
         # print(glGetError())
         # self.set_uniforms(self.program)
 
-        glBegin(GL_QUADS)
-        for i, (v0, v1, v2) in enumerate(triangulated_vertices):
-            normal = normals[i]
-            glNormal3fv(normal)
+        glEnable(GL_TEXTURE_2D)
 
-        color = (1.0, 1.0, 1.0)
-        if len(tints) > data.tintindex and data.tintindex >= 0 and self.item:
-            tint = tints[data.tintindex]
-            color = tint.resolve(self.getter, item=self.item)
-            color = (color[0] / 255, color[1] / 255, color[2] / 255)
-        for i, (uv0, uv1) in enumerate(texcoords):
-            glColor3f(*color)
-            glTexCoord2f(uv[uv0], uv[uv1])
-            glVertex3fv(rotated_vertices[i])
-        glEnd()
-        # glUseProgram(0)
+        # Save current blend function
+        blend_src = glGetIntegerv(GL_BLEND_SRC)
+        blend_dst = glGetIntegerv(GL_BLEND_DST)
+
+        depht_coef = 0.1
+
+        for layer_index, (tex_id, tint) in enumerate(bindings[0]):
+            glBindTexture(GL_TEXTURE_2D, tex_id)
+            color = (1.0, 1.0, 1.0)
+            real_tint: TintSource | None = tint
+            if tint is None and len(tints) > data.tintindex and data.tintindex >= 0:
+                real_tint = tints[data.tintindex]
+            if real_tint is not None:
+                color = real_tint.resolve(self.getter, item=self.item)
+                color = (color[0] / 255, color[1] / 255, color[2] / 255)
+
+            # Apply depth offset for layering by modifying polygon offset
+            if layer_index > 0:
+                glEnable(GL_POLYGON_OFFSET_FILL)
+                glPolygonOffset(-layer_index * depht_coef, -layer_index * depht_coef)
+                # Change blend function for layered textures
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+            glBegin(GL_QUADS)
+            for i, (v0, v1, v2) in enumerate(triangulated_vertices):
+                normal = normals[i]
+                glNormal3fv(normal)
+            for i, (uv0, uv1) in enumerate(texcoords):
+                glColor3f(*color)
+                glTexCoord2f(uv[uv0], uv[uv1])
+                glVertex3fv(rotated_vertices[i])
+            glEnd()
+
+            # Disable polygon offset after use
+            if layer_index > 0:
+                glDisable(GL_POLYGON_OFFSET_FILL)
+
+        # Restore previous blend function
+        glBlendFunc(blend_src, blend_dst)
+
+        glDisable(GL_TEXTURE_2D)
 
     def get_uv(
         self,
@@ -456,7 +564,7 @@ class GenericModelRenderTask(Task):
 
 @dataclass(kw_only=True)
 class Animation:
-    textures: list[dict[str, str | Image.Image]]
+    textures: list[dict[str, TextureSource]]
     getter: PackGetterV2
     animation_framerate: int
 
@@ -481,7 +589,9 @@ class Animation:
         texture_animated: dict[str, tuple[list[int], bool]] = {}
         for textures in self.textures:
             for texture_path in textures.values():
-                if isinstance(texture_path, Image.Image):
+                if isinstance(texture_path, Image.Image) or isinstance(
+                    texture_path, tuple
+                ):
                     raise RenderError(f"WTF is going on")
                 if resolve_key(texture_path) in texture_animated:
                     continue
